@@ -30,7 +30,7 @@ RANDOM_ORG_API_KEY = os.getenv("RANDOM_API_KEY")  # API ключ от random.org
 DATA_DIR = Path("/app/data")
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 # Путь к базе данных
-DB_NAME = DATA_DIR + "/bot.db"
+DB_NAME = DATA_DIR / "bot.db"
 
 # Webhook настройки
 WEBHOOK_HOST = os.getenv("DOMAIN") # Ваш домен (обязательно HTTPS)
