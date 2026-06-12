@@ -10,6 +10,7 @@ from datetime import datetime
 # FastAPI импорты
 from fastapi import FastAPI, Request, Response, status
 from fastapi.responses import JSONResponse
+from contextlib import asynccontextmanager
 import uvicorn
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
@@ -588,10 +589,11 @@ async def handle_delete_callback(update: Update, context: ContextTypes.DEFAULT_T
 # ==================== FASTAPI WEBHOOK ОБРАБОТЧИК ====================
 telegram_app = None
 
-async def setup_telegram_app() -> Application:
-    """Настройка приложения Telegram"""
+def setup_telegram_app() -> Application:
+    """Настройка приложения Telegram (синхронная инициализация обработчиков)"""
     global telegram_app
     
+    # Создаем приложение без немедленного вызова initialize()
     telegram_app = Application.builder().token(TOKEN).build()
     
     # Регистрация обработчиков
@@ -622,15 +624,17 @@ async def setup_telegram_app() -> Application:
     telegram_app.add_handler(CallbackQueryHandler(back_to_categories, pattern="^back_to_categories$"))
     telegram_app.add_handler(CallbackQueryHandler(handle_delete_callback, pattern="^(del_|del_cancel)"))
     
-    # Инициализация приложения python-telegram-bot
-    await telegram_app.initialize()
     return telegram_app
-
-@app.on_event("startup")
-async def on_startup():
-    """Событие запуска FastAPI сервера"""
+    
+@asynccontextmanager
+async def lifespan(fastapi_app: FastAPI):
+    """Управление жизненным циклом приложения (Lifespan)"""
+    # ---------------- СТАРТ СЕРВЕРА ----------------
     init_db()
-    await setup_telegram_app()
+    setup_telegram_app()
+    
+    # Асинхронная инициализация python-telegram-bot
+    await telegram_app.initialize()
     
     # Настройка webhook
     webhook_url = f"{WEBHOOK_HOST}{WEBHOOK_URL_PATH}"
@@ -647,15 +651,19 @@ async def on_startup():
     except Exception as e:
         logger.error(f"Ошибка при установке webhook: {e}")
 
-@app.on_event("shutdown")
-async def on_shutdown():
-    """Событие остановки FastAPI сервера"""
+    yield  # В этой точке FastAPI запускается и начинает принимать запросы
+
+    # ---------------- ОСТАНОВКА СЕРВЕРА ----------------
     try:
         await telegram_app.bot.delete_webhook()
         logger.info("Webhook удалён")
         await telegram_app.shutdown()
+        logger.info("Telegram-приложение успешно остановлено")
     except Exception as e:
         logger.error(f"Ошибка при остановке telegram app: {e}")
+
+# Передаем lifespan в конструктор FastAPI
+app = FastAPI(title="Telegram Bot Webhook", lifespan=lifespan)
 
 @app.post(WEBHOOK_URL_PATH)
 async def webhook(request: Request):
