@@ -1,4 +1,5 @@
 python-telegram-bot
 aiohttp
-flask
 python-dotenv
+fastapi
+uvicorn
