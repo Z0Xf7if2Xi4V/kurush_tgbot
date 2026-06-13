@@ -35,7 +35,7 @@ DATA_DIR.mkdir(parents=True, exist_ok=True)
 DB_NAME = DATA_DIR / "bot.db"
 
 # Webhook настройки
-WEBHOOK_HOST = os.getenv("WEBHOOK_URL") # Ваш домен (обязательно HTTPS)
+WEBHOOK_HOST = f"https://{os.getenv('DOMAIN')}" # Ваш домен (обязательно HTTPS)
 WEBHOOK_PORT = int(os.getenv("PORT", "3000")) # Порт для webhook (обычно 443, 8443, 80)
 WEBHOOK_LISTEN = "0.0.0.0"  # Адрес для прослушивания
 WEBHOOK_URL_PATH = f"/{TOKEN}"  # Путь для webhook
