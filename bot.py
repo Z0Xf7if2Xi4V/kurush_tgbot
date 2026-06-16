@@ -715,6 +715,7 @@ def setup_telegram_app() -> Application:
         },
         fallbacks=[CommandHandler("cancel", cancel), CallbackQueryHandler(handle_privacy_callback, pattern="^privacy_cancel$")],
         allow_reentry=True,
+        per_message=False,
     )
     
     telegram_app.add_handler(CommandHandler("start", start))
