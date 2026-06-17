@@ -28,7 +28,7 @@ from telegram.ext import (
 
 # ==================== НАСТРОЙКИ ====================
 
-TOKEN = os.getenv("BOT_TOKEN")  # токен бота
+TOKEN = os.getenv("TG_TOKEN")  # токен бота
 RANDOM_ORG_API_KEY = os.getenv("RANDOM_API_KEY")  # API ключ от random.org
 # Путь к папке data
 DATA_DIR = Path("/app/data")
