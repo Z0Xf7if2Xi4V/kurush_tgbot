@@ -808,7 +808,7 @@ def index():
 
 if __name__ == "__main__":
     uvicorn.run(
-        "modbot:app",  # имя файла изменено на modbot (соответствует переданному названию)
+        "bot:app",  
         host=WEBHOOK_LISTEN,
         port=WEBHOOK_PORT,
         reload=False
